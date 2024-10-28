@@ -86,9 +86,13 @@
       #drawn-cards {
         position: relative;
       }
+      .drawn-cards-container {
+        display: flex;
+      }
       .drawn-cards-batch {
         display: flex;
-        position: absolute;
+        left: -100px;
+        position: relative;
       }
       .drawn-card-one {
         position: relative;
@@ -114,6 +118,7 @@
         color: rgb(170, 11, 11);
       }
       .top-card-column {
+        width: 75px;
       }
 
       .upper-row {
@@ -143,7 +148,7 @@
           <div class="card final-card-pile"></div>
           <div class="card final-card-pile"></div>
         </div>
-        <div>
+        <div class="drawn-cards-container">
           <div id="drawn-cards"></div>
           <div id="deck" class="deck">
             <div class="card deck-card">&smile;</div>
@@ -155,43 +160,6 @@
     <script type="text/javascript">
       const board = new Board();
       const deck = board.deck;
-
-      const deckElement = document.querySelector("#deck");
-      deckElement.addEventListener("click", () => {
-        const drawnCards = board.drawCards(deck);
-        const drawnCardBatchElement = document.createElement("div");
-        drawnCardBatchElement.classList.add("drawn-cards-batch");
-
-        const drawnCardsElement = document.querySelector("#drawn-cards");
-
-        drawnCards.forEach((card, idx) => {
-          const cardElement = document.createElement("div");
-          cardElement.classList.add("card");
-          if (idx === 0) {
-            cardElement.classList.add("drawn-card-one");
-            cardElement.classList.add("top-drawn-card");
-
-            cardElement.addEventListener("click", () => {
-              board.selectCard(cardElement);
-            });
-          }
-          if (idx === 1) cardElement.classList.add("drawn-card-two");
-
-          const cardValueElement = document.createElement("h3");
-          cardValueElement.innerHTML = card[0];
-
-          const cardSuitElement = document.createElement("p");
-          cardSuitElement.classList.add("card-suit");
-          if (["&heartsuit;", "&diamondsuit;"].includes(card[1]))
-            cardSuitElement.classList.add("red-color");
-          cardSuitElement.innerHTML = card[1];
-
-          cardElement.append(cardValueElement, cardSuitElement);
-          drawnCardBatchElement.append(cardElement);
-        });
-
-        drawnCardsElement.append(drawnCardBatchElement);
-      });
     </script>
   </body>
 </html>

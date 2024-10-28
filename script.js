@@ -3,6 +3,8 @@ class Board {
     this.deck = this.shuffleDeck();
     this.topCardColumns = this.setTopCards();
     this.finalCardPiles = this.setFinalCardPiles();
+
+    this.setDeckElement();
   }
 
   playCardInPile(pileId) {
@@ -98,6 +100,29 @@ class Board {
     return topCardsObj;
   }
 
+  setDeckElement() {
+    const deckElement = document.querySelector("#deck");
+    deckElement.addEventListener("click", () => {
+      const drawnCards = this.drawCards(this.deck);
+      const drawnCardBatchElement = document.createElement("div");
+      drawnCardBatchElement.classList.add("drawn-cards-batch");
+
+      const drawnCardsElement = document.querySelector("#drawn-cards");
+      drawnCards.forEach((card, idx) => {
+        card.flipped = true;
+        card.DOMElement.addEventListener("click", (e) =>
+          this.selectCard(card, e)
+        );
+        card.DOMElement.style.position = "absolute";
+        card.DOMElement.style.left = `-${idx * 25}px`;
+
+        drawnCardBatchElement.append(card.DOMElement);
+      });
+
+      drawnCardsElement.append(drawnCardBatchElement);
+    });
+  }
+
   setFinalCardPiles() {
     const finalPiles = document.querySelectorAll(".final-card-pile");
 
@@ -158,7 +183,7 @@ class Board {
     this.selectedCard = null;
   }
 
-  playSelectedCard(cardPlayedOn) {
+  playCardIntoColumn(cardPlayedOn) {
     // find the column that the selected card is in
     const columnCards = this.topCardColumns[this.selectedCard.columnNumber];
 
@@ -191,6 +216,13 @@ class Board {
 
     // flip the card at the bottom of the column the card was moved from
     this.showColumnLastCard(previousColumn);
+  }
+
+  playSelectedCard(cardPlayedOn) {
+    // cards can be played from a column or from the deck
+    // first check if card is being played from a column
+    if (this.selectedCard.columnNumber) this.playCardIntoColumn(cardPlayedOn);
+    // check if card is being played from the deck
 
     // deselect the card that was played
     this.selectedCard.DOMElement.classList.remove("card-selected");
