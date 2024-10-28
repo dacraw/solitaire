@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="./script.js"></script>
+    <style>
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+      }
+      html,
+      body,
+      p,
+      h3 {
+        margin: 0;
+        padding: 0;
+      }
+      .board {
+        background-color: gray;
+        padding: 10px;
+        height: 90%;
+        width: 90%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .bottom-row {
+        display: flex;
+        justify-content: space-between;
+      }
+      .card {
+        user-select: none;
+        width: 75px;
+        height: 100px;
+        border: 3px solid black;
+        cursor: pointer;
+        position: relative;
+        transition: transform 1s;
+        transform-style: preserve-3d;
+      }
+      .card-flipped {
+        transform: rotateY(180deg);
+      }
+      .card-front,
+      .card-back {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        backface-visibility: hidden;
+      }
+      .card-back {
+        background-color: green;
+        transform: rotateY(180deg);
+      }
+      .card-front {
+        position: absolute;
+        background-color: white;
+      }
+      .card-selected {
+        border-color: blue;
+      }
+      .card-suit {
+        font-size: 4em;
+      }
+      .card-suit-top-row {
+        font-size: 1.5em;
+      }
+      .card-top-row {
+        display: flex;
+        justify-content: space-around;
+        width: 100%;
+        align-items: center;
+      }
+      .deck {
+        align-self: flex-start;
+      }
+      .deck-card {
+        background-color: green;
+        font-size: 2em;
+        text-align: center;
+        cursor: pointer;
+      }
+      #drawn-cards {
+        position: relative;
+      }
+      .drawn-cards-batch {
+        display: flex;
+        position: absolute;
+      }
+      .drawn-card-one {
+        position: relative;
+        left: 100px;
+        z-index: 10;
+      }
+      .drawn-card-two {
+        position: relative;
+        left: 50px;
+      }
+      .final-cards {
+        display: flex;
+        width: 50%;
+        justify-content: space-between;
+      }
+      .final-cards div {
+        background-color: white;
+      }
+      .final-card-pile {
+        position: relative;
+      }
+      .red-color {
+        color: rgb(170, 11, 11);
+      }
+      .top-card-column {
+      }
+
+      .upper-row {
+        height: 50%;
+        display: flex;
+        justify-content: space-evenly;
+        perspective: 600px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="board">
+      <div class="upper-row">
+        <div id="top-card-column-1" class="top-card-column"></div>
+        <div id="top-card-column-2" class="top-card-column"></div>
+        <div id="top-card-column-3" class="top-card-column"></div>
+        <div id="top-card-column-4" class="top-card-column"></div>
+        <div id="top-card-column-5" class="top-card-column"></div>
+        <div id="top-card-column-6" class="top-card-column"></div>
+        <div id="top-card-column-7" class="top-card-column"></div>
+      </div>
+
+      <div class="bottom-row">
+        <div id="final-card-piles" class="final-cards">
+          <div class="card final-card-pile"></div>
+          <div class="card final-card-pile"></div>
+          <div class="card final-card-pile"></div>
+          <div class="card final-card-pile"></div>
+        </div>
+        <div>
+          <div id="drawn-cards"></div>
+          <div id="deck" class="deck">
+            <div class="card deck-card">&smile;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      const board = new Board();
+      const deck = board.deck;
+
+      const deckElement = document.querySelector("#deck");
+      deckElement.addEventListener("click", () => {
+        const drawnCards = board.drawCards(deck);
+        const drawnCardBatchElement = document.createElement("div");
+        drawnCardBatchElement.classList.add("drawn-cards-batch");
+
+        const drawnCardsElement = document.querySelector("#drawn-cards");
+
+        drawnCards.forEach((card, idx) => {
+          const cardElement = document.createElement("div");
+          cardElement.classList.add("card");
+          if (idx === 0) {
+            cardElement.classList.add("drawn-card-one");
+            cardElement.classList.add("top-drawn-card");
+
+            cardElement.addEventListener("click", () => {
+              board.selectCard(cardElement);
+            });
+          }
+          if (idx === 1) cardElement.classList.add("drawn-card-two");
+
+          const cardValueElement = document.createElement("h3");
+          cardValueElement.innerHTML = card[0];
+
+          const cardSuitElement = document.createElement("p");
+          cardSuitElement.classList.add("card-suit");
+          if (["&heartsuit;", "&diamondsuit;"].includes(card[1]))
+            cardSuitElement.classList.add("red-color");
+          cardSuitElement.innerHTML = card[1];
+
+          cardElement.append(cardValueElement, cardSuitElement);
+          drawnCardBatchElement.append(cardElement);
+        });
+
+        drawnCardsElement.append(drawnCardBatchElement);
+      });
+    </script>
+  </body>
+</html>
