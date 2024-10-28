@@ -179,9 +179,9 @@ class Board {
       if (selectedCard === this.selectedCard) return this.deselectCard();
 
       // if the currently selected card can be played on the newly clicked card, play it
-      if (this.cardCanBePlayed(this.selectedCard, selectedCard)) {
-        return this.playSelectedCard(selectedCard);
-      }
+      return this.cardCanBePlayed(this.selectedCard, selectedCard)
+        ? this.playSelectedCard(selectedCard)
+        : null;
     }
 
     this.selectedCard = selectedCard;
