@@ -224,8 +224,9 @@ class Board {
     // this.renderTopCardColumn(this.selectedCard.columnNumber);
     this.renderTopCardColumn(cardPlayedOn.columnNumber);
 
-    // flip the card at the bottom of the column the card was moved from
-    this.showColumnLastCard(previousColumn);
+    // if there are remaining cards in the previous column, show the bottom card
+    if (this.topCardColumns[previousColumn].length)
+      this.showColumnLastCard(previousColumn);
   }
 
   playCardFromDrawnCards(cardPlayedOn) {
