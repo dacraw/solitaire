@@ -178,7 +178,7 @@ class Board {
       // deselect the selected card if the user clicks it again
       if (selectedCard === this.selectedCard) return this.deselectCard();
 
-      // if the currently selected card can be played on the newly clicked card, play it
+      // play the currently selected card or return early to prevent the remaining function
       return this.cardCanBePlayed(this.selectedCard, selectedCard)
         ? this.playSelectedCard(selectedCard)
         : null;
@@ -199,9 +199,7 @@ class Board {
 
     // find the location of the selected card within its current column
     const columnIndex = columnCards
-      .map(({ card }) => {
-        return card.id;
-      })
+      .map(({ card }) => card.id)
       .indexOf(this.selectedCard.id);
 
     // remove the card and every card after it from its current column
@@ -210,18 +208,20 @@ class Board {
       columnCards.length - columnIndex
     );
 
+    // set the new column number for the cards that are moved
+    const previousColumn = this.selectedCard.columnNumber;
+    cardsToMove.forEach(
+      ({ card }) => (card.columnNumber = cardPlayedOn.columnNumber)
+    );
+
     // find the cards in the new column
     const newColumnCards = this.topCardColumns[cardPlayedOn.columnNumber];
 
     // add the removed cards into the new column
     newColumnCards.push(...cardsToMove);
 
-    // set the new column number for the card that is moved
-    const previousColumn = this.selectedCard.columnNumber;
-    this.selectedCard.columnNumber = cardPlayedOn.columnNumber;
-
     // re-render the columns that have changes
-    //   this.renderTopCardColumn(this.selectedCard.columnNumber);
+    // this.renderTopCardColumn(this.selectedCard.columnNumber);
     this.renderTopCardColumn(cardPlayedOn.columnNumber);
 
     // flip the card at the bottom of the column the card was moved from
