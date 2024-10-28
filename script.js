@@ -3,6 +3,7 @@ class Board {
     this.deck = this.shuffleDeck();
     this.topCardColumns = this.setTopCards();
     this.finalCardPiles = this.setFinalCardPiles();
+    this.drawnCards = [];
 
     this.setDeckElement();
   }
@@ -102,6 +103,7 @@ class Board {
 
   setDeckElement() {
     const deckElement = document.querySelector("#deck");
+
     deckElement.addEventListener("click", () => {
       const drawnCards = this.drawCards(this.deck);
       const drawnCardBatchElement = document.createElement("div");
@@ -148,13 +150,18 @@ class Board {
     return cardColumn;
   }
 
-  drawCards(deck) {
-    const topThreeCards = deck.splice(0, 3);
-    const reversedCards = [];
+  drawCards() {
+    const drawnCards = [];
+    for (let i = 0; i < 3; i++) {
+      const drawnCard = this.deck.pop();
+      drawnCard.drawnCard = true;
+      drawnCards.push(drawnCard);
+      this.drawnCards.push(drawnCard);
+    }
 
-    topThreeCards.forEach((card) => reversedCards.unshift(card));
+    this.drawnCards[this.drawnCards.length - 1].topOfDrawnCards = true;
 
-    return reversedCards;
+    return drawnCards;
   }
 
   selectCard(selectedCard) {
@@ -163,6 +170,9 @@ class Board {
 
     // prevent cards in the final piles from being selected
     if (selectedCard.inPile) return;
+
+    // only the top drawn card should be able to be selected
+    if (selectedCard.drawnCard && !selectedCard.topOfDrawnCards) return;
 
     if (this.selectedCard) {
       // deselect the selected card if the user clicks it again
@@ -183,7 +193,7 @@ class Board {
     this.selectedCard = null;
   }
 
-  playCardIntoColumn(cardPlayedOn) {
+  playCardFromColumn(cardPlayedOn) {
     // find the column that the selected card is in
     const columnCards = this.topCardColumns[this.selectedCard.columnNumber];
 
@@ -218,11 +228,39 @@ class Board {
     this.showColumnLastCard(previousColumn);
   }
 
+  playCardFromDrawnCards(cardPlayedOn) {
+    // remove selected card from the deck
+    const indexOfDrawnCardPlayed = this.drawnCards
+      .map((card) => card.id)
+      .indexOf(this.selectedCard.id);
+
+    const drawnCardPlayed = this.drawnCards.splice(
+      indexOfDrawnCardPlayed,
+      1
+    )[0];
+
+    // assign `columnNumber` to the moved card
+    drawnCardPlayed.columnNumber = cardPlayedOn.columnNumber;
+
+    // add selected card into the new column
+    const columnPlayedOnCards = this.topCardColumns[cardPlayedOn.columnNumber];
+    columnPlayedOnCards.push({ card: drawnCardPlayed });
+
+    // re-render the column with the new card (removing the left positioning needed for rendering drawn cards)
+    drawnCardPlayed.DOMElement.style.left = 0;
+    this.renderTopCardColumn(cardPlayedOn.columnNumber);
+  }
+
   playSelectedCard(cardPlayedOn) {
     // cards can be played from a column or from the deck
     // first check if card is being played from a column
-    if (this.selectedCard.columnNumber) this.playCardIntoColumn(cardPlayedOn);
-    // check if card is being played from the deck
+
+    if (this.selectedCard.columnNumber) {
+      this.playCardFromColumn(cardPlayedOn);
+    } else {
+      // card is being played from the deck
+      this.playCardFromDrawnCards(cardPlayedOn);
+    }
 
     // deselect the card that was played
     this.selectedCard.DOMElement.classList.remove("card-selected");
