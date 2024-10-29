@@ -15,7 +15,7 @@ class Deck {
     let cardId = 0;
     cardSuits.forEach((suit) => {
       Object.keys(cardValues).forEach((value) => {
-        const card = new Card(value, suit, cardId);
+        const card = new Card(value, suit, cardId, this.board);
 
         deck.push(card);
         cardId++;
@@ -48,19 +48,25 @@ class Deck {
 
     for (let i = 0; i < 3; i++) {
       const drawnCard = cardsCopy.shift();
-      drawnCard.drawnCard = true;
-      drawnCard.flipped = true;
-      drawnCard.DOMElement.addEventListener("click", (e) => {
-        this.board.selectCard(drawnCard, e);
-      });
-      drawnCard.DOMElement.style.position = "absolute";
-      drawnCard.DOMElement.style.left = `-${i * 25}px`;
-      drawnCardBatchElement.append(drawnCard.DOMElement);
+      if (drawnCard) {
+        drawnCard.drawnCard = true;
+        drawnCard.flipped = true;
 
-      this.drawnCards.push(drawnCard);
+        drawnCard.DOMElement.style.position = "absolute";
+        drawnCard.DOMElement.style.left = `-${i * 25}px`;
+        drawnCardBatchElement.append(drawnCard.DOMElement);
+
+        this.drawnCards.push(drawnCard);
+      }
     }
 
-    this.drawnCards.forEach((card) => (card.topOfDrawnCards = false));
+    this.drawnCards.forEach((card) => {
+      card.topOfDrawnCards = false;
+
+      if (this.board.selectedCard) {
+        this.board.deselectCard();
+      }
+    });
     this.drawnCards[this.drawnCards.length - 1].topOfDrawnCards = true;
 
     drawnCardsElement.append(drawnCardBatchElement);
@@ -348,12 +354,24 @@ const CARD_COLORS = {
 };
 
 class Card {
-  constructor(rank, suit, id) {
+  constructor(rank, suit, id, board) {
     this.rank = rank;
     this.suit = suit;
     this.id = id;
+    this.board = board;
     this.color = this.cardColor();
     this.DOMElement = this.createDOMElement();
+    this.setEventHandler();
+  }
+
+  setEventHandler() {
+    if (!this.DOMElement) {
+      throw `Cannot add event handler since the card id ${this.id} has no DOMElement`;
+    }
+
+    this.DOMElement.addEventListener("click", (e) => {
+      this.board.selectCard(this, e);
+    });
   }
 
   createDOMElement() {
@@ -498,8 +516,6 @@ class TopCardColumn {
     // this needs to be merged with the instance method within Board
     // there is too much going on here that could be refactored in less code
     const previousColumnNumber = card.columnNumber;
-    console.log(previousColumnNumber);
-    console.log(this.board.topCardColumns[previousColumnNumber]);
     this.board.topCardColumns[previousColumnNumber].cards.pop();
     card.columnNumber = this.columnNumber;
     card.DOMElement.style.top = 0;
@@ -534,10 +550,6 @@ class TopCardColumn {
       if (idx !== cards.length - 1) {
         card.DOMElement.classList.add("card-flipped");
       }
-
-      card.DOMElement.addEventListener("click", (e) => {
-        this.board.selectCard(card, e);
-      });
 
       document
         .querySelector(`#top-card-column-${this.columnNumber}`)
