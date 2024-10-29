@@ -124,16 +124,42 @@ class Board {
 
   drawCards() {
     const drawnCards = [];
+
     for (let i = 0; i < 3; i++) {
-      const drawnCard = this.deck.pop();
-      drawnCard.drawnCard = true;
-      drawnCards.push(drawnCard);
-      this.drawnCards.push(drawnCard);
+      if (this.deck.length) {
+        const drawnCard = this.deck.pop();
+        drawnCard.drawnCard = true;
+        drawnCards.push(drawnCard);
+        this.drawnCards.push(drawnCard);
+      }
     }
 
     this.drawnCards[this.drawnCards.length - 1].topOfDrawnCards = true;
 
+    if (!this.deck.length) {
+      document.querySelector("#deck .deck-card").style.display = "none";
+
+      const resetDeckElement = document.createElement("div");
+      resetDeckElement.addEventListener("click", () => this.resetDeck());
+      resetDeckElement.classList.add("card");
+      resetDeckElement.id = "reset-deck";
+      resetDeckElement.innerText = "RESET DECK";
+
+      document.querySelector("#deck").append(resetDeckElement);
+    }
+
     return drawnCards;
+  }
+
+  resetDeck() {
+    this.drawnCards.forEach((card) => {
+      card.DOMElement.remove();
+    });
+    this.deck = this.drawnCards;
+    this.drawnCards = [];
+
+    document.querySelector("#reset-deck").remove();
+    document.querySelector("#deck .deck-card").style.display = "block";
   }
 
   selectCard(selectedCard) {
