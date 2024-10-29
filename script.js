@@ -505,22 +505,33 @@ class TopCardColumn {
         this.board.selectedCard &&
         this.board.selectedCard.rank === "K"
       ) {
-        this.addCardToPile(this.board.selectedCard);
+        this.addCardToColumn(this.board.selectedCard);
       }
     });
   }
 
-  addCardToPile(card) {
+  addCardToColumn(card) {
     // this needs to be merged with the instance method within Board
     // there is too much going on here that could be refactored in less code
-    const previousColumnNumber = card.columnNumber;
-    this.board.topCardColumns[previousColumnNumber].cards.pop();
+    if (card.columnNumber) {
+      const previousColumnNumber = card.columnNumber;
+      this.board.topCardColumns[previousColumnNumber].cards.pop();
+      this.board.topCardColumns[previousColumnNumber].showBottomCard();
+    } else if (card.drawnCard) {
+      card.DOMElement.style.position = "static";
+      card.topOfDrawnCards = false;
+      card.drawnCard = false;
+
+      const drawnCards = this.board.deck.drawnCards;
+      drawnCards.pop();
+      drawnCards[drawnCards.length - 1].topOfDrawnCards = true;
+    }
     card.columnNumber = this.columnNumber;
     card.DOMElement.style.top = 0;
+    card.DOMElement.style.left = 0;
     this.board.deselectCard();
 
     this.cards.push(card);
-    this.board.topCardColumns[previousColumnNumber].showBottomCard();
 
     this.board.renderTopCardColumn(this.columnNumber);
   }
