@@ -89,6 +89,38 @@ class Deck {
     document.querySelector("#reset-deck").style.display = "none";
     document.querySelector("#deck .deck-card").style.display = "block";
   }
+
+  playCardFromDrawnCards(selectedCard, cardPlayedOn) {
+    // NOTE: this is only invoked when playing into a top column
+    // the logic should be merged for both playing into the top column AND for playing into the final pile
+
+    // remove selected card from the deck
+    const indexOfDrawnCardPlayed = this.drawnCards
+      .map((card) => card.id)
+      .indexOf(selectedCard.id);
+
+    const drawnCardPlayed = this.drawnCards.splice(
+      indexOfDrawnCardPlayed,
+      1
+    )[0];
+
+    // assign `columnNumber` to the moved card
+    drawnCardPlayed.columnNumber = cardPlayedOn.columnNumber;
+
+    // add selected card into the new column
+    const columnPlayedOnCards =
+      this.board.topCardColumns[cardPlayedOn.columnNumber].cards;
+    columnPlayedOnCards.push(drawnCardPlayed);
+
+    // set the top of the drawn cards property
+    if (this.drawnCards.length) {
+      this.drawnCards[this.drawnCards.length - 1].topOfDrawnCards = true;
+    }
+
+    // re-render the column with the new card (removing the left positioning needed for rendering drawn cards)
+    drawnCardPlayed.DOMElement.style.left = 0;
+    this.board.renderTopCardColumn(cardPlayedOn.columnNumber);
+  }
 }
 
 class Board {
@@ -229,38 +261,6 @@ class Board {
     }
   }
 
-  playCardFromDrawnCards(cardPlayedOn) {
-    // NOTE: this is only invoked when playing into a top column
-    // the logic should be merged for both playing into the top column AND for playing into the final pile
-
-    // remove selected card from the deck
-    const indexOfDrawnCardPlayed = this.drawnCards
-      .map((card) => card.id)
-      .indexOf(this.selectedCard.id);
-
-    const drawnCardPlayed = this.drawnCards.splice(
-      indexOfDrawnCardPlayed,
-      1
-    )[0];
-
-    // assign `columnNumber` to the moved card
-    drawnCardPlayed.columnNumber = cardPlayedOn.columnNumber;
-
-    // add selected card into the new column
-    const columnPlayedOnCards =
-      this.topCardColumns[cardPlayedOn.columnNumber].cards;
-    columnPlayedOnCards.push(drawnCardPlayed);
-
-    // set the top of the drawn cards property
-    if (this.drawnCards.length) {
-      this.drawnCards[this.drawnCards.length - 1].topOfDrawnCards = true;
-    }
-
-    // re-render the column with the new card (removing the left positioning needed for rendering drawn cards)
-    drawnCardPlayed.DOMElement.style.left = 0;
-    this.renderTopCardColumn(cardPlayedOn.columnNumber);
-  }
-
   playSelectedCard(cardPlayedOn) {
     // cards can be played from a column or from the deck
     // first check if card is being played from a column
@@ -269,7 +269,7 @@ class Board {
       this.playCardFromColumn(cardPlayedOn);
     } else {
       // card is being played from the deck
-      this.playCardFromDrawnCards(cardPlayedOn);
+      this.deck.playCardFromDrawnCards(this.selectedCard, cardPlayedOn);
     }
 
     // deselect the card that was played
@@ -299,6 +299,8 @@ class Board {
   }
 
   cardCanBePlayed(selectedCard, cardPlayedOn) {
+    return true;
+
     const selectedCardValue = cardValues[selectedCard.rank];
     const selectedCardColor = selectedCard.color;
 
@@ -496,6 +498,8 @@ class TopCardColumn {
     // this needs to be merged with the instance method within Board
     // there is too much going on here that could be refactored in less code
     const previousColumnNumber = card.columnNumber;
+    console.log(previousColumnNumber);
+    console.log(this.board.topCardColumns[previousColumnNumber]);
     this.board.topCardColumns[previousColumnNumber].cards.pop();
     card.columnNumber = this.columnNumber;
     card.DOMElement.style.top = 0;
