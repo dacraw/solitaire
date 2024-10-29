@@ -151,9 +151,10 @@ class Board {
       if (selectedCard === this.selectedCard) return this.deselectCard();
 
       // play the currently selected card or return early to prevent the remaining function
-      return this.cardCanBePlayed(this.selectedCard, selectedCard)
-        ? this.playSelectedCard(selectedCard)
-        : null;
+      //   return this.cardCanBePlayed(this.selectedCard, selectedCard)
+      //     ? this.playSelectedCard(selectedCard)
+      //     : null;
+      return this.playSelectedCard(selectedCard);
     }
 
     this.selectedCard = selectedCard;
@@ -456,9 +457,32 @@ class TopCardColumn {
   }
 
   setEventHandler() {
-    // this.DOMElement.addEventListener("click", () => {
-    //   if (!this.cards.length) console.log("yo");
-    // });
+    this.DOMElement.addEventListener("click", () => {
+      if (
+        !this.cards.length &&
+        this.board.selectedCard &&
+        this.board.selectedCard.rank === "K"
+      ) {
+        this.addCardToPile(this.board.selectedCard);
+      }
+    });
+  }
+
+  addCardToPile(card) {
+    // this needs to be merged with the instance method within Board
+    // there is too much going on here that could be refactored in less code
+    const previousColumnNumber = card.columnNumber;
+    this.board.topCardColumns[previousColumnNumber].cards.pop();
+    card.columnNumber = this.columnNumber;
+    card.DOMElement.style.top = 0;
+    this.board.deselectCard();
+
+    this.cards.push(card);
+    this.board.topCardColumns[previousColumnNumber].showBottomCard();
+
+    this.board.renderTopCardColumn(this.columnNumber);
+    console.log(this.columnNumber);
+    console.log(this.cards);
   }
 
   initializeColumnCards() {
