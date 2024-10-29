@@ -1,12 +1,104 @@
+class Deck {
+  constructor(board) {
+    this.board = board;
+    this.cards = this.generate();
+    this.drawnCards = [];
+    this.DOMElement = document.querySelector("#deck");
+
+    this.shuffle();
+    this.setEventHandler();
+  }
+
+  generate() {
+    const deck = [];
+
+    let cardId = 0;
+    cardSuits.forEach((suit) => {
+      Object.keys(cardValues).forEach((value) => {
+        const card = new Card(value, suit, cardId);
+
+        deck.push(card);
+        cardId++;
+      });
+    });
+
+    return deck;
+  }
+
+  shuffle() {
+    const deck = this.cards;
+    const shuffledDeck = [];
+
+    while (deck.length > 0) {
+      const randomIndex = Math.floor(Math.random() * deck.length);
+      const randomCard = deck.splice(randomIndex, 1);
+      shuffledDeck.push(randomCard[0]);
+    }
+
+    this.cards = shuffledDeck;
+  }
+
+  drawCards() {
+    const cardsCopy = [...this.cards];
+
+    const drawnCardsElement = document.querySelector("#drawn-cards");
+
+    const drawnCardBatchElement = document.createElement("div");
+    drawnCardBatchElement.classList.add("drawn-cards-batch");
+
+    for (let i = 0; i < 3; i++) {
+      const drawnCard = cardsCopy.shift();
+      drawnCard.drawnCard = true;
+      drawnCard.flipped = true;
+      drawnCard.DOMElement.addEventListener("click", (e) => {
+        this.board.selectCard(drawnCard, e);
+      });
+      drawnCard.DOMElement.style.position = "absolute";
+      drawnCard.DOMElement.style.left = `-${i * 25}px`;
+      drawnCardBatchElement.append(drawnCard.DOMElement);
+
+      this.drawnCards.push(drawnCard);
+    }
+
+    this.drawnCards.forEach((card) => (card.topOfDrawnCards = false));
+    this.drawnCards[this.drawnCards.length - 1].topOfDrawnCards = true;
+
+    drawnCardsElement.append(drawnCardBatchElement);
+
+    this.cards = cardsCopy;
+
+    if (!this.cards.length) {
+      document.querySelector("#deck .deck-card").style.display = "none";
+      document.querySelector("#reset-deck").style.display = "block";
+    }
+  }
+
+  setEventHandler() {
+    this.DOMElement.addEventListener("click", () => {
+      this.cards.length ? this.drawCards() : this.reset();
+    });
+  }
+
+  reset() {
+    this.drawnCards.forEach((card) => {
+      card.DOMElement.remove();
+    });
+    this.cards = this.drawnCards;
+    this.drawnCards = [];
+
+    document.querySelector("#reset-deck").style.display = "none";
+    document.querySelector("#deck .deck-card").style.display = "block";
+  }
+}
+
 class Board {
   constructor() {
-    this.deck = this.shuffleDeck();
+    this.deck = new Deck(this);
     this.finalCardPiles = this.setFinalCardPiles();
     this.drawnCards = [];
     this.topCardColumns = {};
 
     this.setTopCards();
-    this.setDeckElement();
   }
 
   playCardInPile(pileId) {
@@ -35,37 +127,8 @@ class Board {
     pile.addCardToPile(this.selectedCard);
   }
 
-  createDeck() {
-    const deck = [];
-
-    let cardId = 0;
-    cardSuits.forEach((suit) => {
-      Object.keys(cardValues).forEach((value) => {
-        const card = new Card(value, suit, cardId);
-
-        deck.push(card);
-        cardId++;
-      });
-    });
-
-    return deck;
-  }
-
-  shuffleDeck() {
-    const deck = this.createDeck();
-    const shuffledDeck = [];
-
-    while (deck.length > 0) {
-      const randomIndex = Math.floor(Math.random() * deck.length);
-      const randomCard = deck.splice(randomIndex, 1);
-      shuffledDeck.push(randomCard[0]);
-    }
-
-    return shuffledDeck;
-  }
-
   setTopCards() {
-    const deck = this.deck;
+    const deck = this.deck.cards;
 
     // Set the cards in the top columns
     for (let i = 1; i <= 7; i++) {
@@ -87,30 +150,6 @@ class Board {
     return cardColumn;
   }
 
-  setDeckElement() {
-    const deckElement = document.querySelector("#deck");
-
-    deckElement.addEventListener("click", () => {
-      const drawnCards = this.drawCards(this.deck);
-      const drawnCardBatchElement = document.createElement("div");
-      drawnCardBatchElement.classList.add("drawn-cards-batch");
-
-      const drawnCardsElement = document.querySelector("#drawn-cards");
-      drawnCards.forEach((card, idx) => {
-        card.flipped = true;
-        card.DOMElement.addEventListener("click", (e) => {
-          this.selectCard(card, e);
-        });
-        card.DOMElement.style.position = "absolute";
-        card.DOMElement.style.left = `-${idx * 25}px`;
-
-        drawnCardBatchElement.append(card.DOMElement);
-      });
-
-      drawnCardsElement.append(drawnCardBatchElement);
-    });
-  }
-
   setFinalCardPiles() {
     const finalPiles = document.querySelectorAll(".final-card-pile");
 
@@ -120,46 +159,6 @@ class Board {
     });
 
     return pileInstances;
-  }
-
-  drawCards() {
-    const drawnCards = [];
-
-    for (let i = 0; i < 3; i++) {
-      if (this.deck.length) {
-        const drawnCard = this.deck.pop();
-        drawnCard.drawnCard = true;
-        drawnCards.push(drawnCard);
-        this.drawnCards.push(drawnCard);
-      }
-    }
-
-    this.drawnCards[this.drawnCards.length - 1].topOfDrawnCards = true;
-
-    if (!this.deck.length) {
-      document.querySelector("#deck .deck-card").style.display = "none";
-
-      const resetDeckElement = document.createElement("div");
-      resetDeckElement.addEventListener("click", () => this.resetDeck());
-      resetDeckElement.classList.add("card");
-      resetDeckElement.id = "reset-deck";
-      resetDeckElement.innerText = "RESET DECK";
-
-      document.querySelector("#deck").append(resetDeckElement);
-    }
-
-    return drawnCards;
-  }
-
-  resetDeck() {
-    this.drawnCards.forEach((card) => {
-      card.DOMElement.remove();
-    });
-    this.deck = this.drawnCards;
-    this.drawnCards = [];
-
-    document.querySelector("#reset-deck").remove();
-    document.querySelector("#deck .deck-card").style.display = "block";
   }
 
   selectCard(selectedCard) {
