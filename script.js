@@ -151,10 +151,9 @@ class Board {
       if (selectedCard === this.selectedCard) return this.deselectCard();
 
       // play the currently selected card or return early to prevent the remaining function
-      //   return this.cardCanBePlayed(this.selectedCard, selectedCard)
-      //     ? this.playSelectedCard(selectedCard)
-      //     : null;
-      return this.playSelectedCard(selectedCard);
+      return this.cardCanBePlayed(this.selectedCard, selectedCard)
+        ? this.playSelectedCard(selectedCard)
+        : null;
     }
 
     this.selectedCard = selectedCard;
@@ -481,8 +480,6 @@ class TopCardColumn {
     this.board.topCardColumns[previousColumnNumber].showBottomCard();
 
     this.board.renderTopCardColumn(this.columnNumber);
-    console.log(this.columnNumber);
-    console.log(this.cards);
   }
 
   initializeColumnCards() {
