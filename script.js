@@ -305,8 +305,6 @@ class Board {
   }
 
   cardCanBePlayed(selectedCard, cardPlayedOn) {
-    return true;
-
     const selectedCardValue = cardValues[selectedCard.rank];
     const selectedCardColor = selectedCard.color;
 
