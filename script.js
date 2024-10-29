@@ -457,13 +457,12 @@ class FinalCardPile {
     // if the card is played from drawn cards, set the next card as top of pile
     if (card.drawnCard) {
       // remove the card from the drawn cards
-      this.board.drawnCards.pop();
+      const drawnCards = this.board.deck.drawnCards;
+      drawnCards.pop();
 
-      if (this.board.drawnCards.length) {
+      if (this.board.deck.drawnCards.length) {
         // set the next drawn card to be the top of the drawn cards pile
-        this.board.drawnCards[
-          this.board.drawnCards.length - 1
-        ].topOfDrawnCards = true;
+        drawnCards[drawnCards.length - 1].topOfDrawnCards = true;
       }
     }
 
