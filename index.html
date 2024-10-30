@@ -121,6 +121,13 @@
       }
       #reset-deck {
         display: none;
+        background-color: green;
+        align-items: center;
+        justify-content: center;
+      }
+      .reset-deck-icon {
+        height: 50%;
+        width: 50%;
       }
       .top-card-column {
         width: 75px;
@@ -157,7 +164,12 @@
           <div id="drawn-cards"></div>
           <div id="deck" class="deck">
             <div class="card deck-card">&smile;</div>
-            <div id="reset-deck" class="card">RESET DECK</div>
+            <div id="reset-deck" class="card">
+              <img
+                class="reset-deck-icon"
+                src="./arrow-rotate-left-solid.svg"
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -78,7 +78,7 @@ class Deck {
 
     if (!this.cards.length) {
       document.querySelector("#deck .deck-card").style.display = "none";
-      document.querySelector("#reset-deck").style.display = "block";
+      document.querySelector("#reset-deck").style.display = "flex";
     }
   }
 
