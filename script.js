@@ -49,9 +49,6 @@ class Deck {
 
     const drawnCardsElement = document.querySelector("#drawn-cards");
 
-    const drawnCardBatchElement = document.createElement("div");
-    drawnCardBatchElement.classList.add("drawn-cards-batch");
-
     for (let i = 0; i < 3; i++) {
       const drawnCard = cardsCopy.shift();
       if (drawnCard) {
@@ -59,23 +56,23 @@ class Deck {
         drawnCard.flipped = true;
 
         drawnCard.DOMElement.style.position = "absolute";
-        drawnCard.DOMElement.style.left = `-${i * 25}px`;
-        drawnCardBatchElement.append(drawnCard.DOMElement);
+
+        drawnCardsElement.append(drawnCard.DOMElement);
 
         this.drawnCards.push(drawnCard);
       }
     }
 
-    this.drawnCards.forEach((card) => {
+    this.drawnCards.forEach((card, i) => {
       card.topOfDrawnCards = false;
-
-      if (this.board.selectedCard) {
-        this.board.deselectCard();
-      }
+      const calculatedCardWidth =
+        ((i * 25) / drawnCardsElement.getBoundingClientRect().width) * 100;
+      card.DOMElement.style.right = `${calculatedCardWidth}px`;
     });
+    if (this.board.selectedCard) {
+      this.board.deselectCard();
+    }
     this.drawnCards[this.drawnCards.length - 1].topOfDrawnCards = true;
-
-    drawnCardsElement.append(drawnCardBatchElement);
 
     this.cards = cardsCopy;
 
