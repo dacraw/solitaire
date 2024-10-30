@@ -159,8 +159,11 @@ class Board {
     const selectedCardColor = selectedCard.color;
 
     // if there isn't a card being played on, it's because a column is empty
+    // this should be refactored or relocated, because it's confusing logic
     if (!cardPlayedOn && selectedCard.rank !== "K") {
       return false;
+    } else if (!cardPlayedOn && selectedCard.rank === "K") {
+      return true;
     }
 
     const cardPlayedOnValue = cardValues[cardPlayedOn.rank];
