@@ -132,17 +132,33 @@
       .top-card-column {
         width: 75px;
       }
-
       .upper-row {
         height: 50%;
         display: flex;
         justify-content: space-evenly;
         perspective: 600px;
       }
+      #win-box {
+        border: 3px solid black;
+        position: absolute;
+        width: 50%;
+        height: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        background-color: white;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
     </style>
   </head>
   <body>
     <div class="board">
+      <div id="win-box">
+        <h3>Congratulations, you won!!</h3>
+      </div>
       <div class="upper-row">
         <div id="top-card-column-1" class="top-card-column"></div>
         <div id="top-card-column-2" class="top-card-column"></div>

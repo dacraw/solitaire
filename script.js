@@ -1,6 +1,25 @@
 class Game {
   constructor() {
-    this.board = new Board();
+    this.board = new Board(this);
+  }
+
+  checkWinCondition() {
+    const topColumnCardsRemaining = Object.values(this.board.topCardColumns)
+      .map((column) => column.cards)
+      .flat().length;
+    const deckCardsRemaining = this.board.deck.cards.length;
+    const drawnCardsRemaining = this.board.deck.drawnCards.length;
+
+    if (
+      topColumnCardsRemaining + deckCardsRemaining + drawnCardsRemaining ===
+      0
+    ) {
+      this.win();
+    }
+  }
+
+  win() {
+    document.querySelector("#win-box").style.display = "flex";
   }
 }
 
@@ -101,7 +120,8 @@ class Deck {
 }
 
 class Board {
-  constructor() {
+  constructor(game) {
+    this.game = game;
     this.deck = new Deck(this);
     this.finalCardPiles = this.setFinalCardPiles();
     this.drawnCards = [];
@@ -200,12 +220,12 @@ const cardValues = {
   5: 5,
   6: 6,
   7: 7,
-  8: 8,
-  9: 9,
-  10: 10,
-  J: 11,
-  Q: 12,
-  K: 13,
+  // 8: 8,
+  // 9: 9,
+  // 10: 10,
+  // J: 11,
+  // Q: 12,
+  // K: 13,
 };
 const CARD_COLORS = {
   red: "RED",
@@ -306,6 +326,7 @@ class FinalCardPile {
   }
 
   selectedCardCanBeAddedToPile() {
+    return true;
     const selectedCard = this.board.selectedCard;
     if (!selectedCard) return false;
 
@@ -364,11 +385,6 @@ class FinalCardPile {
     // remove the card from the column in the DOM and add to the pile's DOm
     this.DOMElement.append(card.DOMElement);
 
-    // flip the new card in the existing column, if there are cards there
-    // if (this.board.topCardColumns[card.columnNumber].cards.length) {
-    //   this.board.topCardColumns[card.columnNumber].showBottomCard();
-    // }
-
     // remove the selected card
     this.board.deselectCard();
 
@@ -376,6 +392,9 @@ class FinalCardPile {
     card.DOMElement.style.top = 0;
     card.DOMElement.style.left = 0;
     card.DOMElement.style.position = "absolute";
+
+    // check for win condition after each card is added
+    this.board.game.checkWinCondition();
   }
 }
 
