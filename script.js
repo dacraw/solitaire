@@ -95,38 +95,6 @@ class Deck {
     document.querySelector("#reset-deck").style.display = "none";
     document.querySelector("#deck .deck-card").style.display = "block";
   }
-
-  playCardFromDrawnCards(selectedCard, cardPlayedOn) {
-    // NOTE: this is only invoked when playing into a top column
-    // the logic should be merged for both playing into the top column AND for playing into the final pile
-
-    // remove selected card from the deck
-    const indexOfDrawnCardPlayed = this.drawnCards
-      .map((card) => card.id)
-      .indexOf(selectedCard.id);
-
-    const drawnCardPlayed = this.drawnCards.splice(
-      indexOfDrawnCardPlayed,
-      1
-    )[0];
-
-    // assign `columnNumber` to the moved card
-    drawnCardPlayed.columnNumber = cardPlayedOn.columnNumber;
-
-    // add selected card into the new column
-    const columnPlayedOnCards =
-      this.board.topCardColumns[cardPlayedOn.columnNumber].cards;
-    columnPlayedOnCards.push(drawnCardPlayed);
-
-    // set the top of the drawn cards property
-    if (this.drawnCards.length) {
-      this.drawnCards[this.drawnCards.length - 1].topOfDrawnCards = true;
-    }
-
-    // re-render the column with the new card (removing the left positioning needed for rendering drawn cards)
-    drawnCardPlayed.DOMElement.style.left = 0;
-    this.board.renderTopCardColumn(cardPlayedOn.columnNumber);
-  }
 }
 
 class Board {
@@ -200,6 +168,7 @@ class Board {
   }
 
   selectCard(selectedCard) {
+    console.log(selectedCard);
     // prevent user from selecting an unflipped card
     if (!selectedCard.flipped) return;
 
@@ -222,24 +191,6 @@ class Board {
   }
 
   deselectCard() {
-    this.selectedCard.DOMElement.classList.remove("card-selected");
-    this.selectedCard = null;
-  }
-
-  playSelectedCard(cardPlayedOn) {
-    // cards can be played from a column or from the deck
-    // first check if card is being played from a column
-
-    const columnNumber = cardPlayedOn.columnNumber;
-
-    if (columnNumber) {
-      this.playCardFromColumn(cardPlayedOn);
-    } else {
-      // card is being played from the deck
-      this.deck.playCardFromDrawnCards(this.selectedCard, cardPlayedOn);
-    }
-
-    // deselect the card that was played
     this.selectedCard.DOMElement.classList.remove("card-selected");
     this.selectedCard = null;
   }
@@ -491,6 +442,8 @@ class TopCardColumn {
 
   addCardToColumn(card) {
     if (card.columnNumber) {
+      // card can be played from a column into another column
+
       // find the column that the selected card is in
       const selectedCardcolumnCards =
         this.board.topCardColumns[card.columnNumber].cards;
@@ -518,13 +471,20 @@ class TopCardColumn {
         this.board.topCardColumns[previousColumn].showBottomCard();
       }
     } else if (card.drawnCard) {
+      // card can be played from the drawn card pile into a column
+
+      // set style and attributes to match that of a column card
       card.DOMElement.style.position = "static";
       card.topOfDrawnCards = false;
       card.drawnCard = false;
+      card.columnNumber = this.columnNumber;
+      this.cards.push(card);
 
       const drawnCards = this.board.deck.drawnCards;
       drawnCards.pop();
-      drawnCards[drawnCards.length - 1].topOfDrawnCards = true;
+      if (drawnCards.length) {
+        drawnCards[drawnCards.length - 1].topOfDrawnCards = true;
+      }
     }
     card.DOMElement.style.left = 0;
     this.board.deselectCard();
