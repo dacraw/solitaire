@@ -107,32 +107,6 @@ class Board {
     this.setTopCards();
   }
 
-  // playCardInPile(pileId) {
-  //   if (!this.selectedCard) return;
-
-  //   // add the selected card to the pile
-  //   const pile = this.finalCardPiles.find((pile) => pile.id === pileId);
-  //   const { cards } = pile;
-
-  //   // first, if the pile is empty then allow only an "A" to be played
-  //   if (cards.length === 0 && this.selectedCard.rank !== "A") {
-  //     return;
-  //   }
-
-  //   // if the pile has cards in it, only allow a card rank that is 1 rank higher to be played
-  //   const lastCardInPile = cards[cards.length - 1];
-  //   if (lastCardInPile) {
-  //     // if the selected card isn't the same suit, prevent it from being played
-  //     if (this.selectedCard.suit !== lastCardInPile.suit) return;
-
-  //     const rankDifference =
-  //       cardValues[this.selectedCard.rank] - cardValues[lastCardInPile.rank];
-  //     if (rankDifference !== 1) return;
-  //   }
-
-  //   pile.addCardToPile(this.selectedCard);
-  // }
-
   setTopCards() {
     const deck = this.deck.cards;
 
@@ -141,20 +115,6 @@ class Board {
       this.topCardColumns[i] = new TopCardColumn(i, deck.splice(0, i), this);
     }
   }
-
-  // setTopCardColumn(cards, columnNumber) {
-  //   const cardColumn = [];
-
-  //   cards.forEach((card, idx) => {
-  //     card.columnNumber = columnNumber;
-  //     card.flipped = idx === cards.length - 1 ? true : false;
-
-  //     cardColumn.push({
-  //       card,
-  //     });
-  //   });
-  //   return cardColumn;
-  // }
 
   setFinalCardPiles() {
     const finalPiles = document.querySelectorAll(".final-card-pile");
@@ -194,29 +154,7 @@ class Board {
     this.selectedCard = null;
   }
 
-  // showColumnLastCard(columnNumber) {
-  //   const columnCards = this.topCardColumns[columnNumber];
-
-  //   columnCards[columnCards.length - 1].card.show();
-  // }
-
-  // renderTopCardColumn(colId) {
-  //   const cards = this.topCardColumns[colId].cards;
-
-  //   cards.forEach((card, idx) => {
-  //     if (idx !== 0) {
-  //       card.DOMElement.style.position = "relative";
-  //       card.DOMElement.style.top = `-${idx * 75}px`;
-  //     }
-
-  //     document
-  //       .querySelector(`#top-card-column-${colId}`)
-  //       .append(card.DOMElement);
-  //   });
-  // }
-
   cardCanBePlayed(selectedCard, cardPlayedOn) {
-    return true;
     const selectedCardValue = cardValues[selectedCard.rank];
     const selectedCardColor = selectedCard.color;
 
