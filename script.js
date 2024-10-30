@@ -220,12 +220,12 @@ const cardValues = {
   5: 5,
   6: 6,
   7: 7,
-  // 8: 8,
-  // 9: 9,
-  // 10: 10,
-  // J: 11,
-  // Q: 12,
-  // K: 13,
+  8: 8,
+  9: 9,
+  10: 10,
+  J: 11,
+  Q: 12,
+  K: 13,
 };
 const CARD_COLORS = {
   red: "RED",
@@ -326,7 +326,6 @@ class FinalCardPile {
   }
 
   selectedCardCanBeAddedToPile() {
-    return true;
     const selectedCard = this.board.selectedCard;
     if (!selectedCard) return false;
 
