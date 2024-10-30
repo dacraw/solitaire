@@ -107,31 +107,31 @@ class Board {
     this.setTopCards();
   }
 
-  playCardInPile(pileId) {
-    if (!this.selectedCard) return;
+  // playCardInPile(pileId) {
+  //   if (!this.selectedCard) return;
 
-    // add the selected card to the pile
-    const pile = this.finalCardPiles.find((pile) => pile.id === pileId);
-    const { cards } = pile;
+  //   // add the selected card to the pile
+  //   const pile = this.finalCardPiles.find((pile) => pile.id === pileId);
+  //   const { cards } = pile;
 
-    // first, if the pile is empty then allow only an "A" to be played
-    if (cards.length === 0 && this.selectedCard.rank !== "A") {
-      return;
-    }
+  //   // first, if the pile is empty then allow only an "A" to be played
+  //   if (cards.length === 0 && this.selectedCard.rank !== "A") {
+  //     return;
+  //   }
 
-    // if the pile has cards in it, only allow a card rank that is 1 rank higher to be played
-    const lastCardInPile = cards[cards.length - 1];
-    if (lastCardInPile) {
-      // if the selected card isn't the same suit, prevent it from being played
-      if (this.selectedCard.suit !== lastCardInPile.suit) return;
+  //   // if the pile has cards in it, only allow a card rank that is 1 rank higher to be played
+  //   const lastCardInPile = cards[cards.length - 1];
+  //   if (lastCardInPile) {
+  //     // if the selected card isn't the same suit, prevent it from being played
+  //     if (this.selectedCard.suit !== lastCardInPile.suit) return;
 
-      const rankDifference =
-        cardValues[this.selectedCard.rank] - cardValues[lastCardInPile.rank];
-      if (rankDifference !== 1) return;
-    }
+  //     const rankDifference =
+  //       cardValues[this.selectedCard.rank] - cardValues[lastCardInPile.rank];
+  //     if (rankDifference !== 1) return;
+  //   }
 
-    pile.addCardToPile(this.selectedCard);
-  }
+  //   pile.addCardToPile(this.selectedCard);
+  // }
 
   setTopCards() {
     const deck = this.deck.cards;
@@ -142,19 +142,19 @@ class Board {
     }
   }
 
-  setTopCardColumn(cards, columnNumber) {
-    const cardColumn = [];
+  // setTopCardColumn(cards, columnNumber) {
+  //   const cardColumn = [];
 
-    cards.forEach((card, idx) => {
-      card.columnNumber = columnNumber;
-      card.flipped = idx === cards.length - 1 ? true : false;
+  //   cards.forEach((card, idx) => {
+  //     card.columnNumber = columnNumber;
+  //     card.flipped = idx === cards.length - 1 ? true : false;
 
-      cardColumn.push({
-        card,
-      });
-    });
-    return cardColumn;
-  }
+  //     cardColumn.push({
+  //       card,
+  //     });
+  //   });
+  //   return cardColumn;
+  // }
 
   setFinalCardPiles() {
     const finalPiles = document.querySelectorAll(".final-card-pile");
@@ -168,7 +168,6 @@ class Board {
   }
 
   selectCard(selectedCard) {
-    console.log(selectedCard);
     // prevent user from selecting an unflipped card
     if (!selectedCard.flipped) return;
 
@@ -195,31 +194,36 @@ class Board {
     this.selectedCard = null;
   }
 
-  showColumnLastCard(columnNumber) {
-    const columnCards = this.topCardColumns[columnNumber];
+  // showColumnLastCard(columnNumber) {
+  //   const columnCards = this.topCardColumns[columnNumber];
 
-    columnCards[columnCards.length - 1].card.show();
-  }
+  //   columnCards[columnCards.length - 1].card.show();
+  // }
 
-  renderTopCardColumn(colId) {
-    const cards = this.topCardColumns[colId].cards;
+  // renderTopCardColumn(colId) {
+  //   const cards = this.topCardColumns[colId].cards;
 
-    cards.forEach((card, idx) => {
-      if (idx !== 0) {
-        card.DOMElement.style.position = "relative";
-        card.DOMElement.style.top = `-${idx * 75}px`;
-      }
+  //   cards.forEach((card, idx) => {
+  //     if (idx !== 0) {
+  //       card.DOMElement.style.position = "relative";
+  //       card.DOMElement.style.top = `-${idx * 75}px`;
+  //     }
 
-      document
-        .querySelector(`#top-card-column-${colId}`)
-        .append(card.DOMElement);
-    });
-  }
+  //     document
+  //       .querySelector(`#top-card-column-${colId}`)
+  //       .append(card.DOMElement);
+  //   });
+  // }
 
   cardCanBePlayed(selectedCard, cardPlayedOn) {
     return true;
     const selectedCardValue = cardValues[selectedCard.rank];
     const selectedCardColor = selectedCard.color;
+
+    // if there isn't a card being played on, it's because a column is empty
+    if (!cardPlayedOn && selectedCard.rank !== "K") {
+      return false;
+    }
 
     const cardPlayedOnValue = cardValues[cardPlayedOn.rank];
     const cardPlayedOnColor = cardPlayedOn.color;
@@ -351,11 +355,41 @@ class FinalCardPile {
 
   setEventHandler() {
     this.DOMElement.addEventListener("click", () => {
-      board.playCardInPile(this.id);
+      if (this.selectedCardCanBeAddedToPile()) {
+        this.addSelectedCardToPile();
+      }
     });
   }
 
-  addCardToPile(card) {
+  selectedCardCanBeAddedToPile() {
+    const selectedCard = this.board.selectedCard;
+    if (!selectedCard) return false;
+
+    // add the selected card to the pile
+    const pile = this;
+    const { cards } = pile;
+
+    // first, if the pile is empty then allow only an "A" to be played
+    if (cards.length === 0 && selectedCard.rank !== "A") {
+      return false;
+    }
+
+    // if the pile has cards in it, only allow a card rank that is 1 rank higher to be played
+    const lastCardInPile = cards[cards.length - 1];
+    if (lastCardInPile) {
+      // if the selected card isn't the same suit, prevent it from being played
+      if (selectedCard.suit !== lastCardInPile.suit) return false;
+
+      const rankDifference =
+        cardValues[selectedCard.rank] - cardValues[lastCardInPile.rank];
+      if (rankDifference !== 1) return false;
+    }
+
+    return true;
+  }
+
+  addSelectedCardToPile() {
+    const card = this.board.selectedCard;
     // add card to the pile
     this.cards.push(card);
 
@@ -419,6 +453,7 @@ class TopCardColumn {
       if (this.board.selectedCard) {
         const lastCardInColumn = this.cards[this.cards.length - 1];
 
+        // determine whether the selected card is playable into a column based on the last column card
         if (this.board.selectedCard !== lastCardInColumn) {
           if (
             this.board.cardCanBePlayed(
@@ -429,13 +464,6 @@ class TopCardColumn {
             this.addCardToColumn(this.board.selectedCard);
           }
         }
-      }
-      if (
-        !this.cards.length &&
-        this.board.selectedCard
-        // && this.board.selectedCard.rank === "K"
-      ) {
-        this.addCardToColumn(this.board.selectedCard);
       }
     });
   }
@@ -477,6 +505,7 @@ class TopCardColumn {
       card.DOMElement.style.position = "static";
       card.topOfDrawnCards = false;
       card.drawnCard = false;
+      card.DOMElement.style.left = 0;
       card.columnNumber = this.columnNumber;
       this.cards.push(card);
 
@@ -486,7 +515,6 @@ class TopCardColumn {
         drawnCards[drawnCards.length - 1].topOfDrawnCards = true;
       }
     }
-    card.DOMElement.style.left = 0;
     this.board.deselectCard();
 
     // re-render the columns that have changes
@@ -497,10 +525,8 @@ class TopCardColumn {
     const cards = this.cards;
 
     cards.forEach((card, idx) => {
-      if (idx !== 0) {
-        card.DOMElement.style.position = "relative";
-        card.DOMElement.style.top = `-${idx * 75}px`;
-      }
+      card.DOMElement.style.position = "relative";
+      card.DOMElement.style.top = `-${idx * 75}px`;
 
       this.DOMElement.append(card.DOMElement);
     });
