@@ -1,3 +1,9 @@
+class Game {
+  constructor() {
+    this.board = new Board();
+  }
+}
+
 class Deck {
   constructor(board) {
     this.board = board;
@@ -367,7 +373,7 @@ class FinalCardPile {
     // }
 
     // remove the selected card
-    board.deselectCard();
+    this.board.deselectCard();
 
     // stack the cards on top of each other
     card.DOMElement.style.top = 0;
