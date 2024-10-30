@@ -213,10 +213,8 @@ class Board {
       // deselect the selected card if the user clicks it again
       if (selectedCard === this.selectedCard) return this.deselectCard();
 
-      // play the currently selected card or return early to prevent the remaining function
-      return this.cardCanBePlayed(this.selectedCard, selectedCard)
-        ? this.playSelectedCard(selectedCard)
-        : null;
+      // return early so the user cannot select additional cards while one is selected
+      return;
     }
 
     this.selectedCard = selectedCard;
@@ -228,50 +226,13 @@ class Board {
     this.selectedCard = null;
   }
 
-  playCardFromColumn(cardPlayedOn) {
-    // find the column that the selected card is in
-    const columnCards =
-      this.topCardColumns[this.selectedCard.columnNumber].cards;
-
-    // find the location of the selected card within its current column
-    const columnIndex = columnCards
-      .map((card) => card.id)
-      .indexOf(this.selectedCard.id);
-
-    // remove the card and every card after it from its current column
-    const cardsToMove = columnCards.splice(
-      columnIndex,
-      columnCards.length - columnIndex
-    );
-
-    // set the new column number for the cards that are moved
-    const previousColumn = this.selectedCard.columnNumber;
-    cardsToMove.forEach(
-      (card) => (card.columnNumber = cardPlayedOn.columnNumber)
-    );
-
-    // find the cards in the new column
-    const newColumnCards = this.topCardColumns[cardPlayedOn.columnNumber].cards;
-
-    // add the removed cards into the new column
-    newColumnCards.push(...cardsToMove);
-
-    // re-render the columns that have changes
-    // this.renderTopCardColumn(this.selectedCard.columnNumber);
-    this.renderTopCardColumn(cardPlayedOn.columnNumber);
-
-    // if there are remaining cards in the previous column, show the bottom card
-    if (this.topCardColumns[previousColumn].cards.length) {
-      //   this.showColumnLastCard(previousColumn);
-      this.topCardColumns[previousColumn].showBottomCard();
-    }
-  }
-
   playSelectedCard(cardPlayedOn) {
     // cards can be played from a column or from the deck
     // first check if card is being played from a column
 
-    if (this.selectedCard.columnNumber) {
+    const columnNumber = cardPlayedOn.columnNumber;
+
+    if (columnNumber) {
       this.playCardFromColumn(cardPlayedOn);
     } else {
       // card is being played from the deck
@@ -305,6 +266,7 @@ class Board {
   }
 
   cardCanBePlayed(selectedCard, cardPlayedOn) {
+    return true;
     const selectedCardValue = cardValues[selectedCard.rank];
     const selectedCardColor = selectedCard.color;
 
@@ -368,6 +330,10 @@ class Card {
     }
 
     this.DOMElement.addEventListener("click", (e) => {
+      // Necessary to stop propgation in order for column event handler to trigger properly
+      if (!this.board.selectedCard) {
+        e.stopPropagation();
+      }
       this.board.selectCard(this, e);
     });
   }
@@ -498,11 +464,25 @@ class TopCardColumn {
   }
 
   setEventHandler() {
-    this.DOMElement.addEventListener("click", () => {
+    this.DOMElement.addEventListener("click", (e) => {
+      if (this.board.selectedCard) {
+        const lastCardInColumn = this.cards[this.cards.length - 1];
+
+        if (this.board.selectedCard !== lastCardInColumn) {
+          if (
+            this.board.cardCanBePlayed(
+              this.board.selectedCard,
+              lastCardInColumn
+            )
+          ) {
+            this.addCardToColumn(this.board.selectedCard);
+          }
+        }
+      }
       if (
         !this.cards.length &&
-        this.board.selectedCard &&
-        this.board.selectedCard.rank === "K"
+        this.board.selectedCard
+        // && this.board.selectedCard.rank === "K"
       ) {
         this.addCardToColumn(this.board.selectedCard);
       }
@@ -510,12 +490,33 @@ class TopCardColumn {
   }
 
   addCardToColumn(card) {
-    // this needs to be merged with the instance method within Board
-    // there is too much going on here that could be refactored in less code
     if (card.columnNumber) {
-      const previousColumnNumber = card.columnNumber;
-      this.board.topCardColumns[previousColumnNumber].cards.pop();
-      this.board.topCardColumns[previousColumnNumber].showBottomCard();
+      // find the column that the selected card is in
+      const selectedCardcolumnCards =
+        this.board.topCardColumns[card.columnNumber].cards;
+
+      // find the location of the selected card within its current column
+      const selectedCardColumnIndex = selectedCardcolumnCards
+        .map((card) => card.id)
+        .indexOf(card.id);
+
+      // remove the card and every card after it from its current column
+      const cardsToMove = selectedCardcolumnCards.splice(
+        selectedCardColumnIndex,
+        selectedCardcolumnCards.length - selectedCardColumnIndex
+      );
+
+      // set the new column number for the cards that are moved
+      const previousColumn = card.columnNumber;
+      cardsToMove.forEach((card) => (card.columnNumber = this.columnNumber));
+
+      // add the removed cards into the new column
+      this.cards.push(...cardsToMove);
+
+      // if there are remaining cards in the previous column, show the bottom card
+      if (this.board.topCardColumns[previousColumn].cards.length) {
+        this.board.topCardColumns[previousColumn].showBottomCard();
+      }
     } else if (card.drawnCard) {
       card.DOMElement.style.position = "static";
       card.topOfDrawnCards = false;
@@ -525,14 +526,24 @@ class TopCardColumn {
       drawnCards.pop();
       drawnCards[drawnCards.length - 1].topOfDrawnCards = true;
     }
-    card.columnNumber = this.columnNumber;
-    card.DOMElement.style.top = 0;
     card.DOMElement.style.left = 0;
     this.board.deselectCard();
 
-    this.cards.push(card);
+    // re-render the columns that have changes
+    this.rerenderColumnCards();
+  }
 
-    this.board.renderTopCardColumn(this.columnNumber);
+  rerenderColumnCards() {
+    const cards = this.cards;
+
+    cards.forEach((card, idx) => {
+      if (idx !== 0) {
+        card.DOMElement.style.position = "relative";
+        card.DOMElement.style.top = `-${idx * 75}px`;
+      }
+
+      this.DOMElement.append(card.DOMElement);
+    });
   }
 
   initializeColumnCards() {
